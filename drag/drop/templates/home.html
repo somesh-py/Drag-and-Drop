@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drag and Drop Box</title>
+    <style>
+        #dropbox {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Drag and Drop Box</h1>
+    <div id="dropbox" data-url="/saveimage/"> <!-- Specify the URL to post the image -->
+        Drop files here or drag and drop
+    </div>
+    {% if msgdb %}
+        <h1>{{msgdb}}</h1>
+    {% endif %}
+    <script>
+        const dropbox = document.getElementById('dropbox');
+
+        // Prevent the default behavior of the drop event
+        dropbox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropbox.style.border = '2px dashed #333';
+        });
+
+        dropbox.addEventListener('dragleave', () => {
+            dropbox.style.border = '2px dashed #ccc';
+        });
+
+        // Handle the dropped files
+        dropbox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropbox.style.border = '2px dashed #ccc';
+
+            const files = e.dataTransfer.files;
+
+            if (files.length > 0) {
+                const formData = new FormData();
+                formData.append('DDimage', files[0]);
+
+                fetch(dropbox.getAttribute('data-url'), {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}', // Add CSRF token
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    dropbox.innerHTML = data.message;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
